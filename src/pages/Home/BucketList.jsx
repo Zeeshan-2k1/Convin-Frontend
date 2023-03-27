@@ -19,7 +19,7 @@ const BucketList = () => {
   useEffect(() => {
     if (!isLoading) return;
     dispatch(getBuckets());
-  }, [dispatch, isLoading]);
+  }, [isLoading, dispatch]);
 
   return (
     <div style={{ marginBottom: '4.5rem' }}>

@@ -21,6 +21,7 @@ export const bucketSlice = createSlice({
   name: 'bucket',
   initialState: {
     buckets: [],
+    isLoading: true,
   },
   reducers: {
     addBucket: (state, { payload }) => {
