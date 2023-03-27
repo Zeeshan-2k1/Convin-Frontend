@@ -1,0 +1,13 @@
+.__playCard-play-btn {
+  position: absolute;
+  top: 48%;
+  right: 2%;
+  border-radius: 100%;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+.__playCard-play-btn > * {
+  font-size: 64px;
+  color: #1677ff;
+  z-index: 1;
+}
