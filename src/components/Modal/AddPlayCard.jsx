@@ -3,26 +3,18 @@ import { Form, Input, Modal, Select } from 'antd';
 import React, { useContext, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { axiosInstance } from 'axiosInstance';
-
 import { AlertContext } from 'context/AlertContext';
 
 import { useBucketSelector } from 'hooks/useBucketSelector';
-import { useGetBucket } from 'hooks/useGetBuckets';
 
-import { getBuckets } from 'reducers/bucketReducer';
-import { getPlayCards } from 'reducers/playCardReducers';
-
-import { BucketURL } from 'utils/constants';
+import { addPlayCard } from 'reducers/bucketReducer';
 
 const AddPlayCardModal = ({ isOpen, setIsOpen }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [sourceURL, setSourceURL] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [bucket, setBucket] = useState('');
   const { success, error } = useContext(AlertContext);
-  const { bucket: bucketData } = useGetBucket(bucket);
   const { buckets } = useBucketSelector();
   const dispatch = useDispatch();
 
@@ -41,55 +33,25 @@ const AddPlayCardModal = ({ isOpen, setIsOpen }) => {
 
   const handleCreatePlayCard = async () => {
     try {
-      setLoading(true);
       if (!preCheck()) {
         error('Invalid Input Fields');
         handleCloseModal();
         return;
       }
-      let data;
-      if (bucketData?.playCards === undefined) {
-        data = {
-          playCards: [
-            {
-              title,
-              description,
-              id: v4(),
-              createdAt: Date.now(),
-              updatedAt: Date.now(),
-              url: sourceURL,
-              bucket: bucket,
-            },
-          ],
-        };
-      } else {
-        data = {
-          playCards: [
-            ...bucketData?.playCards,
-            {
-              title,
-              description,
-              id: v4(),
-              createdAt: Date.now(),
-              updatedAt: Date.now(),
-              url: sourceURL,
-              bucket: bucket,
-            },
-          ],
-        };
-      }
-      const response = await axiosInstance.patch(`${BucketURL}/${bucket}`, {
-        playCards: data.playCards,
-      });
 
-      if (response.status === 200) {
-        success('New Play Card created!');
-        handleCloseModal();
-        dispatch(getPlayCards());
-        dispatch(getBuckets());
-      } else {
-        throw response;
-      }
+      dispatch(
+        addPlayCard({
+          title,
+          description,
+          updatedAt: Date.now(),
+          createAt: Date.now(),
+          url: sourceURL,
+          bucket,
+          id: v4(),
+        })
+      );
+      success('Updated the Card');
+      handleCloseModal();
     } catch (e) {
       console.log(e);
       error(
@@ -104,7 +66,6 @@ const AddPlayCardModal = ({ isOpen, setIsOpen }) => {
     setDescription('');
     setBucket('');
     setSourceURL('');
-    setLoading(false);
     setIsOpen(false);
   };
 
@@ -114,7 +75,6 @@ const AddPlayCardModal = ({ isOpen, setIsOpen }) => {
         title="Add Play Card"
         open={isOpen}
         onOk={handleCreatePlayCard}
-        confirmLoading={loading}
         onCancel={handleCloseModal}
         okText={'Submit'}
         destroyOnClose={true}

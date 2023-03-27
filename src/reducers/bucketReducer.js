@@ -21,10 +21,67 @@ export const bucketSlice = createSlice({
   name: 'bucket',
   initialState: {
     buckets: [],
-    isLoading: true,
-    error: undefined,
   },
-  reducers: {},
+  reducers: {
+    addBucket: (state, { payload }) => {
+      state.buckets = [...state.buckets, { ...payload }];
+    },
+    removeBucket: (state, { payload }) => {
+      state.buckets = state.buckets.filter((item) => item.id !== payload);
+    },
+    updateBucket: (state, { payload }) => {
+      state.buckets = state.buckets.map((item) => {
+        if (item.id === payload.id) {
+          return { ...item, ...payload };
+        }
+        return item;
+      });
+    },
+    addPlayCard: (state, { payload }) => {
+      state.buckets = state.buckets.map((item) => {
+        if (item.id === payload.bucket) {
+          return {
+            ...item,
+            playCards: item.playCards
+              ? [...item.playCards, { ...payload }]
+              : [{ ...payload }],
+          };
+        } else {
+          return item;
+        }
+      });
+    },
+    removePlayCard: (state, { payload }) => {
+      state.buckets = state.buckets.map((item) => {
+        if (item.id === payload.bucket) {
+          return {
+            ...item,
+            playCards: item.playCards.filter((item) => item.id !== payload.id),
+          };
+        } else {
+          return item;
+        }
+      });
+    },
+    updatePlayCard: (state, { payload }) => {
+      state.buckets = state.buckets.map((item) => {
+        if (item.id === payload.bucket) {
+          return {
+            ...item,
+            playCards: item.playCards.map((item) => {
+              if (item.id === payload.id) {
+                return { ...item, ...payload };
+              } else {
+                return item;
+              }
+            }),
+          };
+        } else {
+          return item;
+        }
+      });
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getBuckets.pending, (state) => {
@@ -41,4 +98,12 @@ export const bucketSlice = createSlice({
   },
 });
 
+export const {
+  addBucket,
+  addPlayCard,
+  removeBucket,
+  removePlayCard,
+  updateBucket,
+  updatePlayCard,
+} = bucketSlice.actions;
 export default bucketSlice.reducer;

@@ -3,13 +3,9 @@ import { Form, Input, Modal } from 'antd';
 import React, { useContext, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { axiosInstance } from 'axiosInstance';
-
 import { AlertContext } from 'context/AlertContext';
 
-import { getBuckets } from 'reducers/bucketReducer';
-
-import { BucketURL } from 'utils/constants';
+import { addBucket } from 'reducers/bucketReducer';
 
 const AddBucketModal = ({ isOpen, setIsOpen, refresh }) => {
   const [title, setTitle] = useState('');
@@ -21,20 +17,22 @@ const AddBucketModal = ({ isOpen, setIsOpen, refresh }) => {
   const handleCreateBucket = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.post(BucketURL, {
-        title,
-        description,
-        id: v4(),
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      });
-      if (response.status === 201) {
-        success('New bucket created!');
-        handleCloseModal();
-        dispatch(getBuckets());
-      } else {
-        throw response;
+      if (!title?.length) {
+        error('inValid Input');
+        return;
       }
+      dispatch(
+        addBucket({
+          title,
+          description,
+          id: v4(),
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        })
+      );
+
+      success('New bucket created!');
+      handleCloseModal();
     } catch (e) {
       console.log(e);
       error(e?.statusText || 'Something went wrong! Please try again.');

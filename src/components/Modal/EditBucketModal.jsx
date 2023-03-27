@@ -2,22 +2,18 @@ import { Form, Input, Modal } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { axiosInstance } from 'axiosInstance';
-
 import { AlertContext } from 'context/AlertContext';
 
-import { useGetBucket } from 'hooks/useGetBuckets';
-
-import { getBuckets } from 'reducers/bucketReducer';
-
-import { BucketURL } from 'utils/constants';
+import { updateBucket } from 'reducers/bucketReducer';
+import { useBucketSelector } from 'hooks/useBucketSelector';
 
 const EditBucketModal = ({ id, isOpen, setIsOpen }) => {
-  const { bucket } = useGetBucket(id);
-  const [isLoading, setIsLoading] = useState(false);
+  const { success, error } = useContext(AlertContext);
+  const { buckets } = useBucketSelector();
+  const bucket = buckets.find((item) => item.id === id);
+
   const [title, setTitle] = useState(bucket?.title);
   const [description, setDescription] = useState(bucket?.description);
-  const { success, error } = useContext(AlertContext);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -27,19 +23,17 @@ const EditBucketModal = ({ id, isOpen, setIsOpen }) => {
 
   const editBucketModal = async () => {
     try {
-      setIsLoading(true);
-      const response = await axiosInstance.patch(`${BucketURL}/${id}`, {
-        title,
-        description,
-        updatedAt: Date.now(),
-      });
-      if (response.status === 200) {
-        success('Bucket Upated');
-        dispatch(getBuckets());
-        closeEditModal();
-      } else {
-        throw response;
-      }
+      dispatch(
+        updateBucket({
+          id,
+          title,
+          description,
+          updatedAt: Date.now(),
+        })
+      );
+
+      success('Bucket Upated');
+      closeEditModal();
     } catch (e) {
       console.log(e);
       error(e.statusText ?? 'Something went wrong. Please try again.');
@@ -49,7 +43,6 @@ const EditBucketModal = ({ id, isOpen, setIsOpen }) => {
 
   const closeEditModal = () => {
     setDescription('');
-    setIsLoading(false);
     setTitle('');
     setIsOpen(false);
   };
@@ -59,7 +52,6 @@ const EditBucketModal = ({ id, isOpen, setIsOpen }) => {
         title="Edit Bucket"
         open={isOpen}
         onOk={editBucketModal}
-        confirmLoading={isLoading}
         onCancel={closeEditModal}
         okText={'Submit'}
       >

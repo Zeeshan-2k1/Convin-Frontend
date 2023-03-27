@@ -2,14 +2,13 @@ import { Modal, Typography } from 'antd';
 
 const { Title } = Typography;
 
-const DeleteModal = ({ isOpen, handleClose, handleSubmit, loading, title }) => {
+const DeleteModal = ({ isOpen, handleClose, handleSubmit, title }) => {
   return (
     <>
       <Modal
         title={title ?? 'Delete'}
         open={isOpen}
         onOk={handleSubmit}
-        confirmLoading={loading}
         onCancel={handleClose}
         okText={'Delete'}
       >

@@ -7,18 +7,10 @@ import { Card, Skeleton, Tooltip } from 'antd';
 import { useContext, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { axiosInstance } from 'axiosInstance';
-
 import { AlertContext } from 'context/AlertContext';
 
-import { useHistorySelector } from 'hooks/useGetHistory';
-import { useGetBucket } from 'hooks/useGetBuckets';
-
-import { getBuckets } from 'reducers/bucketReducer';
-import { getHistory } from 'reducers/historyReducers';
-import { getPlayCards } from 'reducers/playCardReducers';
-
-import { BucketURL, HistroyURL } from 'utils/constants';
+import { removePlayCard } from 'reducers/bucketReducer';
+import { addHistory, removeHistory } from 'reducers/historyReducers';
 
 import DeleteModal from '../Modal/DeleteModal';
 import EditPlayCardModal from '../Modal/EditPlayCard';
@@ -40,40 +32,26 @@ const PlayCard = ({
   lastPlayTime,
 }) => {
   const [editModal, setEditModal] = useState(false);
-  const { bucket } = useGetBucket(bucketId);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteHistoryModal, setDeleteHistoryModal] = useState(false);
   const [playModal, setPlayModal] = useState(false);
-  const [loading, setLoading] = useState(false);
   const { success, error } = useContext(AlertContext);
-  const { list } = useHistorySelector();
   const dispatch = useDispatch();
 
   const deletePlayCard = async () => {
     try {
-      setLoading(true);
       if (!id) {
         error('Invalid Id');
         return;
       }
-      if (!bucket) {
+      if (!bucketId) {
         error('Something went wrong');
         return;
       }
 
-      const playCards = bucket?.playCards;
-      const updatedPlayCards = playCards.filter((item) => item.id !== id);
-      const response = await axiosInstance.patch(`${BucketURL}/${bucketId}`, {
-        playCards: updatedPlayCards,
-      });
-      if (response.status === 200) {
-        success('Successfully Deleted');
-        dispatch(getPlayCards());
-        dispatch(getBuckets());
-        closeDeleteModal();
-      } else {
-        throw response;
-      }
+      dispatch(removePlayCard({ bucket: bucketId, id }));
+      success('Successfully Deleted');
+      closeDeleteModal();
     } catch (error) {
       console.log(error);
       error(error?.statusText ?? 'Something went wrong.');
@@ -82,31 +60,21 @@ const PlayCard = ({
   };
 
   const closeDeleteModal = () => {
-    setLoading(false);
     setDeleteModal(false);
   };
 
-  const addHistory = async () => {
+  const handleAddHistory = async () => {
     try {
-      if (!list) throw new Error("Can't find history. History Disabled");
-      const playCard = list?.filter((item) => item.id === id);
-      if (!playCard.length) {
-        await axiosInstance.post(HistroyURL, {
+      dispatch(
+        addHistory({
           title,
           description,
           url,
           id,
           bucket: bucketId,
           lastPlayTime: Date.now(),
-        });
-      } else {
-        await axiosInstance.patch(`${HistroyURL}/${id}`, {
-          lastPlayTime: Date.now(),
-        });
-      }
-      if (!lastPlayTime) {
-        dispatch(getHistory());
-      }
+        })
+      );
     } catch (error) {
       console.log(error);
     }
@@ -114,20 +82,12 @@ const PlayCard = ({
 
   const deleteHistory = async () => {
     try {
-      setLoading(true);
-      const response = await axiosInstance.delete(`${HistroyURL}/${id}`);
-      if (response.status === 200) {
-        success('Successfully Deleted');
-        dispatch(getHistory());
-        setLoading(false);
-        setDeleteHistoryModal(false);
-      } else {
-        throw response;
-      }
+      dispatch(removeHistory(id));
+      success('Successfully Deleted');
+      setDeleteHistoryModal(false);
     } catch (err) {
       console.log(err);
       error('Something went wrong');
-      setLoading(false);
       setDeleteHistoryModal(false);
     }
   };
@@ -178,7 +138,7 @@ const PlayCard = ({
             <PlayCircleFilled
               onClick={() => {
                 setPlayModal(true);
-                addHistory();
+                handleAddHistory();
               }}
             />
           </Tooltip>
@@ -194,22 +154,15 @@ const PlayCard = ({
         handleClose={() => setDeleteModal(false)}
         handleSubmit={deletePlayCard}
         isOpen={deleteModal}
-        loading={loading}
         title="Delete Play Card"
       />
       <DeleteModal
         handleClose={() => setDeleteHistoryModal(false)}
         handleSubmit={deleteHistory}
         isOpen={deleteHistoryModal}
-        loading={loading}
         title="Delete History"
       />
-      <PlayModal
-        isOpen={playModal}
-        setIsOpen={setPlayModal}
-        url={url}
-        afterClose={() => dispatch(getHistory())}
-      />
+      <PlayModal isOpen={playModal} setIsOpen={setPlayModal} url={url} />
     </>
   );
 };

@@ -1,40 +1,38 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
-import { axiosInstance } from 'axiosInstance';
-
-import { BucketURL } from 'utils/constants';
+import { useBucketSelector } from './useBucketSelector';
 
 export const useGetPlayCard = (bucketId, id) => {
   const [playCard, setPlayCard] = useState();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState();
+  const { buckets } = useBucketSelector();
+  useEffect(() => {
+    const bucket = buckets?.find((item) => item.id === bucketId);
+    if (bucket) {
+      const playCard = bucket?.playCards.find((item) => item.id === id);
+      setPlayCard(playCard);
+    }
+  }, [bucketId, id, buckets]);
 
-  const getPlayCard = useCallback(async () => {
+  return { playCard };
+};
+
+export const useGetPlayCardList = () => {
+  const { buckets } = useBucketSelector();
+  const [playCards, setPlayCards] = useState([]);
+
+  useEffect(() => {
+    let playCards = [];
     try {
-      if (id === undefined) return;
-      setIsLoading(true);
-      const response = await axiosInstance.get(`${BucketURL}/${bucketId}`);
-      if (response.status === 200) {
-        setPlayCard(
-          response.data.playCards.filter((item) => item.id === id)[0]
-        );
-        setIsLoading(false);
-        setError(undefined);
-      } else {
-        throw response;
-      }
+      buckets?.forEach((item) => {
+        if (item?.playCards) {
+          playCards = [...playCards, ...item?.playCards];
+        }
+      });
     } catch (error) {
       console.log(error);
-      setIsLoading(false);
-      setPlayCard(undefined);
-      setError(
-        error?.statuText || "Something went wrong. Couldn't fetch the bucket."
-      );
     }
-  }, [id, bucketId]);
-  useEffect(() => {
-    getPlayCard();
-  }, [getPlayCard]);
+    setPlayCards(playCards);
+  }, [buckets]);
 
-  return { playCard, error, isLoading, refresh: getPlayCard };
+  return { playCards };
 };

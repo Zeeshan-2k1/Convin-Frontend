@@ -2,21 +2,14 @@ import { Form, Input, Modal } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { axiosInstance } from 'axiosInstance';
-
 import { AlertContext } from 'context/AlertContext';
 
-import { useGetBucket } from 'hooks/useGetBuckets';
 import { useGetPlayCard } from 'hooks/useGetPlayCards';
 
-import { getBuckets } from 'reducers/bucketReducer';
-import { getPlayCards } from 'reducers/playCardReducers';
-
-import { BucketURL } from 'utils/constants';
+import { updatePlayCard } from 'reducers/bucketReducer';
 
 const EditPlayCardModal = ({ id, isOpen, setIsOpen, bucketId }) => {
   const { playCard } = useGetPlayCard(bucketId, id);
-  const { bucket } = useGetBucket(bucketId);
   const [isLoading, setIsLoading] = useState(false);
   const [title, setTitle] = useState(playCard?.title);
   const [description, setDescription] = useState(playCard?.description);
@@ -38,8 +31,8 @@ const EditPlayCardModal = ({ id, isOpen, setIsOpen, bucketId }) => {
       description.length &&
       sourceURL &&
       sourceURL.length &&
-      bucket &&
-      bucket.length
+      bucketId &&
+      bucketId.length
     );
   };
 
@@ -51,30 +44,18 @@ const EditPlayCardModal = ({ id, isOpen, setIsOpen, bucketId }) => {
         closePlayCardModal();
         return;
       }
-      const playCards = bucket?.playCards;
-      const updatedPlayCards = playCards.map((item) => {
-        if (item?.id === id) {
-          return {
-            ...item,
-            title,
-            description,
-            mediaURL: sourceURL,
-            updatedAt: Date.now(),
-          };
-        }
-        return item;
-      });
-      const response = await axiosInstance.patch(`${BucketURL}/${bucketId}`, {
-        playCards: updatedPlayCards,
-      });
-      if (response.status === 200) {
-        success('Play Card Upated');
-        dispatch(getPlayCards());
-        dispatch(getBuckets());
-        closePlayCardModal();
-      } else {
-        throw response;
-      }
+      dispatch(
+        updatePlayCard({
+          title,
+          description,
+          updatedAt: Date.now(),
+          url: sourceURL,
+          bucket: bucketId,
+          id: id,
+        })
+      );
+      success('Play Card Upated');
+      closePlayCardModal();
     } catch (e) {
       console.log(e);
       error(e.statusText ?? 'Something went wrong. Please try again.');

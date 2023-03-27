@@ -1,17 +1,14 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { axiosInstance } from 'axiosInstance';
-
-import { BucketURL } from 'utils/constants';
+import { useBucketSelector } from '../hooks/useBucketSelector';
 
 export const getPlayCards = createAsyncThunk(
   'playCard/getPlayCards',
   async (name, thunkAPI) => {
     try {
-      const response = await axiosInstance(BucketURL);
-      if (response.status !== 200) throw response;
+      const { buckets } = useBucketSelector();
       let playCards = [];
-      response.data.forEach((item) => {
+      buckets.forEach((item) => {
         if (item.playCards) playCards = [...playCards, ...item.playCards];
       });
       return playCards;

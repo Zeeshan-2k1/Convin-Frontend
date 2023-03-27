@@ -3,22 +3,16 @@ import { Card, Skeleton } from 'antd';
 import { useContext, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { axiosInstance } from 'axiosInstance';
-
 import { AlertContext } from 'context/AlertContext';
 
-import { getBuckets } from 'reducers/bucketReducer';
-
-import { BucketURL } from 'utils/constants';
+import { removeBucket } from 'reducers/bucketReducer';
 
 import DeleteModal from '../Modal/DeleteModal';
 import EditBucketModal from '../Modal/EditBucketModal';
-import { getPlayCards } from '../../reducers/playCardReducers';
 
 const { Meta } = Card;
 
 const BucketCard = ({ title, description, id, sklLoader, count }) => {
-  const [isLoading, setIsLoading] = useState();
   const [isOpen, setIsOpen] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const { success, error } = useContext(AlertContext);
@@ -26,20 +20,13 @@ const BucketCard = ({ title, description, id, sklLoader, count }) => {
 
   const deleteBucket = async () => {
     try {
-      setIsLoading(true);
       if (!id) {
         error('Invalid Id');
         return;
       }
-      const response = await axiosInstance.delete(`${BucketURL}/${id}`);
-      if (response.status === 200) {
-        success('Successfully Deleted');
-        dispatch(getBuckets());
-        dispatch(getPlayCards());
-        closeDeleteModal();
-      } else {
-        throw response;
-      }
+      dispatch(removeBucket(id));
+      success('Successfully Deleted');
+      closeDeleteModal();
     } catch (error) {
       console.log(error);
       error(error?.statusText ?? 'Something went wrong.');
@@ -48,7 +35,6 @@ const BucketCard = ({ title, description, id, sklLoader, count }) => {
   };
 
   const closeDeleteModal = () => {
-    setIsLoading(false);
     setIsOpen(false);
   };
 
@@ -75,7 +61,6 @@ const BucketCard = ({ title, description, id, sklLoader, count }) => {
         isOpen={isOpen}
         handleClose={closeDeleteModal}
         handleSubmit={deleteBucket}
-        loading={isLoading}
         title="Delete Bucket"
       />
       <EditBucketModal id={id} isOpen={editModal} setIsOpen={setEditModal} />
