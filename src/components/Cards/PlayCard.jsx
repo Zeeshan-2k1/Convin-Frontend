@@ -123,26 +123,34 @@ const PlayCard = ({
         }
       >
         <Skeleton loading={sklLoading} active>
-          <Meta title={title} description={description} />
+          <Meta
+            style={{ position: 'relative' }}
+            title={title}
+            description={
+              <>
+                {description}
+                <div className="__playCard-play-btn">
+                  <Tooltip title="Play Video" placement="bottom">
+                    <PlayCircleFilled
+                      onClick={() => {
+                        setPlayModal(true);
+                        handleAddHistory();
+                      }}
+                    />
+                  </Tooltip>
+                </div>
+              </>
+            }
+          ></Meta>
           {lastPlayTime && (
             <Meta
-              style={{ marginTop: '1rem' }}
+              style={{ marginTop: '1rem', position: 'relative' }}
               description={`Last Played: ${new Date(
                 lastPlayTime
               ).toLocaleString()}`}
-            />
+            ></Meta>
           )}
         </Skeleton>
-        <div className="__playCard-play-btn">
-          <Tooltip title="Play Video" placement="bottom">
-            <PlayCircleFilled
-              onClick={() => {
-                setPlayModal(true);
-                handleAddHistory();
-              }}
-            />
-          </Tooltip>
-        </div>
       </Card>
       <EditPlayCardModal
         isOpen={editModal}

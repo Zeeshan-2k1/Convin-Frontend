@@ -1,7 +1,7 @@
 .__playCard-play-btn {
   position: absolute;
-  top: 48%;
-  right: 2%;
+  top: -100%;
+  right: -2%;
   border-radius: 100%;
   background-color: #ffffff;
   cursor: pointer;
