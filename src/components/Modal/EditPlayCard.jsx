@@ -24,7 +24,6 @@ const EditPlayCardModal = ({ id, isOpen, setIsOpen, bucketId }) => {
   const { success, error } = useContext(AlertContext);
   const dispatch = useDispatch();
 
-  console.log(playCard);
   useEffect(() => {
     setTitle(playCard?.title);
     setDescription(playCard?.description);

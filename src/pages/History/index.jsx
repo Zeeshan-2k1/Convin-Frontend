@@ -21,7 +21,7 @@ const History = () => {
   return (
     <div>
       <Col span={24}>
-        <div data-testId="__history_title" className="__row-between">
+        <div data-testid="__history_title" className="__row-between">
           <Title level={3}>Your History</Title>
         </div>
         {error ? (
